@@ -1,0 +1,171 @@
+extends CanvasLayer
+## HUD：右侧状态面板 + 底部消息日志 + 结算层。只读规则层，消费事件写文案。
+
+const GameEvents = preload("res://src/core/events.gd")
+
+const NAME_MAP := {
+	"player": "你",
+	"rat": "窟鼠",
+	"bat": "洞蝠",
+	"skeleton": "骷髅卫兵",
+}
+const MAX_LOG_LINES := 8
+
+var main: Object = null
+var hp_bar: ProgressBar
+var stats_label: Label
+var log_label: Label
+var end_layer: Control
+var end_title: Label
+var end_detail: Label
+var _log_lines: Array = []
+
+func _ready() -> void:
+	_build_stats_panel()
+	_build_log()
+	_build_end_layer()
+
+func bind_game(game_main: Object) -> void:
+	main = game_main
+
+## 追加一条日志（超出上限丢弃最旧行）。
+func push_msg(msg: String) -> void:
+	_log_lines.append(msg)
+	while _log_lines.size() > MAX_LOG_LINES:
+		_log_lines.pop_front()
+	log_label.text = "\n".join(_log_lines)
+
+## 消费事件流：翻译成玩家可读文案 + 刷新状态面板 + 终局结算。
+func consume(events: Array) -> void:
+	for e in events:
+		match e.type:
+			GameEvents.ATTACKED:
+				_log("%s 对 %s 造成 %d 伤害" % [_name(e.data.attacker_id), _name(e.data.defender_id), e.data.damage])
+			GameEvents.DIED:
+				if e.data.is_player:
+					_log("你倒下了……")
+				else:
+					_log("%s 倒下了" % _name(e.data.actor_id))
+			GameEvents.XP_GAINED:
+				_log("获得 %d 经验" % e.data.amount)
+			GameEvents.LEVELED_UP:
+				_log("升级！Lv.%d（回满血）" % e.data.level)
+			GameEvents.PICKED_UP:
+				_log("拾取 %s" % e.data.item_name)
+			"healed":
+				_log("恢复 %d HP" % e.data.amount)
+			"equipped":
+				_log("装备 %s（%s +%d）" % [e.data.item_id, e.data.stat, e.data.gain])
+			GameEvents.USE_FAILED:
+				_log("使用失败（满血）")
+			GameEvents.DESCENDED:
+				_log("沿楼梯下行……")
+			GameEvents.FLOOR_CHANGED:
+				_log("来到第 %d 层" % e.data.floor_number)
+			GameEvents.GAME_OVER:
+				show_end("你死了", "到达第 %d 层\n\n按 空格 重新开始" % e.data.floor_number)
+			GameEvents.GAME_WON:
+				show_end("地牢征服者！", "3 层全部通过，通关！\n\n按 空格 再来一局")
+	_refresh_stats()
+
+func show_end(title: String, detail: String) -> void:
+	end_title.text = title
+	end_detail.text = detail
+	end_layer.visible = true
+
+func hide_end() -> void:
+	end_layer.visible = false
+
+## 重开时清空日志与结算层。
+func reset() -> void:
+	_log_lines.clear()
+	log_label.text = ""
+	hide_end()
+	_refresh_stats()
+
+func _refresh_stats() -> void:
+	var s = TurnManager.scheduler
+	if s == null or s.player == null:
+		return
+	var p = s.player
+	hp_bar.max_value = p.max_hp
+	hp_bar.value = p.hp
+	stats_label.text = "HP %d/%d\nLv.%d  经验 %d/%d\n攻击 %d  防御 %d\n楼层 %d  背包 %d 件" % [
+		p.hp, p.max_hp, p.level, p.xp, p.xp_to_next(), p.atk, p.defense,
+		s.model.floor_number, s.inventory.size()]
+
+func _name(id: String) -> String:
+	return NAME_MAP.get(id, id)
+
+func _log(msg: String) -> void:
+	push_msg(msg)
+
+func _build_stats_panel() -> void:
+	var panel := PanelContainer.new()
+	panel.anchor_left = 1.0
+	panel.anchor_right = 1.0
+	panel.anchor_top = 0.0
+	panel.anchor_bottom = 1.0
+	panel.offset_left = -200.0
+	panel.offset_top = 8.0
+	panel.offset_bottom = -8.0
+	panel.offset_right = -8.0
+	add_child(panel)
+	var vbox := VBoxContainer.new()
+	panel.add_child(vbox)
+	var title := Label.new()
+	title.text = "冒险者"
+	vbox.add_child(title)
+	hp_bar = ProgressBar.new()
+	hp_bar.custom_minimum_size = Vector2(0, 18)
+	hp_bar.show_percentage = false
+	vbox.add_child(hp_bar)
+	stats_label = Label.new()
+	vbox.add_child(stats_label)
+	var hint := Label.new()
+	hint.text = "方向键/WASD 移动\n空格 下楼\n空格+方向 等待"
+	hint.modulate = Color(1, 1, 1, 0.55)
+	vbox.add_child(hint)
+
+func _build_log() -> void:
+	var bg := ColorRect.new()
+	bg.color = Color(0, 0, 0, 0.55)
+	bg.anchor_top = 1.0
+	bg.anchor_bottom = 1.0
+	bg.anchor_right = 0.0
+	bg.offset_left = 8.0
+	bg.offset_right = 560.0
+	bg.offset_top = -148.0
+	bg.offset_bottom = -8.0
+	add_child(bg)
+	log_label = Label.new()
+	log_label.position = Vector2(8, 8)
+	log_label.size = Vector2(544, 132)
+	log_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	bg.add_child(log_label)
+
+func _build_end_layer() -> void:
+	end_layer = Control.new()
+	end_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	end_layer.visible = false
+	add_child(end_layer)
+	var bg := ColorRect.new()
+	bg.color = Color(0, 0, 0, 0.72)
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	end_layer.add_child(bg)
+	var center := CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	end_layer.add_child(center)
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 16)
+	center.add_child(vbox)
+	end_title = Label.new()
+	end_title.text = ""
+	end_title.add_theme_font_size_override("font_size", 40)
+	end_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(end_title)
+	end_detail = Label.new()
+	end_detail.text = ""
+	end_detail.add_theme_font_size_override("font_size", 18)
+	end_detail.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(end_detail)
