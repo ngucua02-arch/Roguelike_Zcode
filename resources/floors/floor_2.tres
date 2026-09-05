@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="FloorDef" load_steps=11 format=3]
+[gd_resource type="Resource" script_class="FloorDef" load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://src/core/floor_def.gd" id="1_script"]
 [ext_resource type="Resource" path="res://resources/monsters/rat.tres" id="2_rat"]
@@ -10,6 +10,7 @@
 [ext_resource type="Resource" path="res://resources/items/potion_greater.tres" id="8_potion_g"]
 [ext_resource type="Resource" path="res://resources/items/sword_iron.tres" id="9_sword_i"]
 [ext_resource type="Resource" path="res://resources/items/leather_mail.tres" id="10_mail"]
+[ext_resource type="Resource" path="res://resources/items/gold.tres" id="11_gold"]
 
 [resource]
 script = ExtResource("1_script")
@@ -49,5 +50,8 @@ item_spawns = [{
 }, {
 "def": ExtResource("10_mail"),
 "weight": 2
+}, {
+"def": ExtResource("11_gold"),
+"weight": 5
 }]
 floor_theme = Color(0.82, 0.88, 1, 1)

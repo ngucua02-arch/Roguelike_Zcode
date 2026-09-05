@@ -9,4 +9,5 @@ glyph = "["
 id = "leather_mail"
 kind = "armor"
 power = 1
+price = 25
 sprite_coords = Vector2i(6, 5)

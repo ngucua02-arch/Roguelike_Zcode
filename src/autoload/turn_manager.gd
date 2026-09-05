@@ -18,3 +18,12 @@ func player_action(action: String, dir: Vector2i = Vector2i.ZERO) -> Array:
 	if not events.is_empty():
 		events_processed.emit(events)
 	return events
+
+## 购买商品（不消耗回合）。
+func buy(index: int) -> Array:
+	if scheduler == null:
+		return []
+	var events: Array = scheduler.buy(index)
+	if not events.is_empty():
+		events_processed.emit(events)
+	return events

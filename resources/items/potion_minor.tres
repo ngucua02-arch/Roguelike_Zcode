@@ -9,4 +9,5 @@ glyph = "!"
 id = "potion_minor"
 kind = "potion"
 power = 6
+price = 15
 sprite_coords = Vector2i(7, 9)

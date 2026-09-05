@@ -52,6 +52,7 @@ func generate(floor_def: Object, floor_number: int) -> Object:
 	model.add_actor(player)
 
 	_spawn_entities(model, floor_def)
+	_spawn_shopkeeper(model)
 	return model
 
 func _carve_room(model: Object, rect: Rect2i) -> void:
@@ -88,7 +89,9 @@ func _spawn_entities(model: Object, floor_def: Object) -> void:
 		var pos := _find_free_spot(model)
 		if pos == Vector2i(-1, -1):
 			break
-		model.add_actor(actor.from_monster_def(def, pos))
+		var mon = actor.from_monster_def(def, pos)
+		_maybe_elite(mon)
+		model.add_actor(mon)
 
 	var item_count := rng.randi_range(floor_def.item_count_min, floor_def.item_count_max)
 	for i in item_count:
@@ -99,6 +102,31 @@ func _spawn_entities(model: Object, floor_def: Object) -> void:
 		if pos == Vector2i(-1, -1):
 			break
 		model.add_item(def.id, pos, def)
+
+## 精英化：12% 概率属性强化（hp/atk x1.6、经验 x2）。
+func _maybe_elite(mon: Object) -> void:
+	if rng.randf() < 0.12:
+		mon.is_elite = true
+		mon.max_hp = int(ceil(mon.max_hp * 1.6))
+		mon.hp = mon.max_hp
+		mon.atk = int(ceil(mon.atk * 1.6))
+		mon.xp_reward *= 2
+
+## 每层一个商人：站在随机房间的空位上，不参与战斗。
+func _spawn_shopkeeper(model: Object) -> void:
+	var actor = load("res://src/core/actor.gd")
+	var def = load("res://resources/monsters/shopkeeper.tres")
+	for attempt in 100:
+		var rect: Rect2i = rooms[rng.randi_range(0, rooms.size() - 1)]
+		var pos := _random_floor_in(rect)
+		if pos == model.player.pos or pos == model.stairs_pos:
+			continue
+		if model.is_occupied(pos) or not model.item_at(pos).is_empty():
+			continue
+		if model.tile_at(pos) != DungeonModel.Tile.FLOOR:
+			continue
+		model.add_actor(actor.from_monster_def(def, pos))
+		return
 
 func _find_free_spot(model: Object) -> Vector2i:
 	# 随机房间内找空位：非玩家位、非楼梯、无实体、无物品

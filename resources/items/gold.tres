@@ -4,10 +4,10 @@
 
 [resource]
 script = ExtResource("1_script")
-display_name = "锈剑"
-glyph = "/"
-id = "sword_rusty"
-kind = "weapon"
-power = 1
-price = 20
-sprite_coords = Vector2i(7, 8)
+display_name = "金币"
+glyph = "$"
+id = "gold"
+kind = "gold"
+power = 10
+price = 0
+sprite_coords = Vector2i(5, 10)

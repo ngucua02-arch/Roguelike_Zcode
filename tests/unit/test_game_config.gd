@@ -50,7 +50,7 @@ func test_known_monster_values() -> void:
 	assert_true(rat_found, "第 1 层含窟鼠")
 
 func test_item_kinds_valid() -> void:
-	var valid := ["potion", "weapon", "armor"]
+	var valid := ["potion", "weapon", "armor", "gold"]
 	var f = GameConfig.floor_defs()[1]
 	for entry in f.item_spawns:
 		assert_true(valid.has(entry.def.kind), "物品类型合法: %s" % entry.def.kind)

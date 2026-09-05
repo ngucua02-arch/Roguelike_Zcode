@@ -9,4 +9,5 @@ glyph = "p"
 id = "battle_axe"
 kind = "weapon"
 power = 3
+price = 50
 sprite_coords = Vector2i(9, 9)

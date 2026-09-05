@@ -26,11 +26,18 @@ var _inv_panel: PanelContainer
 var _inv_grid: GridContainer
 var _inv_hint: Label
 
+# 商店面板
+var shop_open := false
+var _shop_panel: PanelContainer
+var _shop_grid: GridContainer
+var _shop_gold_label: Label
+
 func _ready() -> void:
 	_build_stats_panel()
 	_build_log()
 	_build_end_layer()
 	_build_inventory_panel()
+	_build_shop_panel()
 
 func bind_game(game_main: Object) -> void:
 	main = game_main
@@ -61,21 +68,40 @@ func consume(events: Array) -> void:
 				_log("拾取 %s" % e.data.item_name)
 				if inventory_open:
 					refresh_inventory()
+			GameEvents.ITEM_DROPPED:
+				_log("%s 掉落了 %s" % ["怪物", e.data.item_name])
 			"healed":
 				_log("恢复 %d HP" % e.data.amount)
 			"equipped":
 				_log("装备 %s（%s +%d）" % [e.data.item_id, e.data.stat, e.data.gain])
 			GameEvents.USE_FAILED:
 				_log("使用失败（满血）")
+			GameEvents.SHOP_OPEN:
+				open_shop()
+			GameEvents.BOUGHT:
+				_log("买下 %s（- %d 金）" % [e.data.item_name, e.data.price])
+				if shop_open:
+					_render_shop()
+			GameEvents.SHOP_FAILED:
+				_log("金币不足，商人摇了摇头")
 			GameEvents.DESCENDED:
 				_log("沿楼梯下行……")
 			GameEvents.FLOOR_CHANGED:
 				_log("来到第 %d 层" % e.data.floor_number)
 			GameEvents.GAME_OVER:
-				show_end("你死了", "到达第 %d 层\n\n按 空格 重新开始" % e.data.floor_number)
+				show_end("你死了", _stats_text(e.data) + "\n\n按 空格 重新开始")
 			GameEvents.GAME_WON:
-				show_end("地牢征服者！", "3 层全部通过，通关！\n\n按 空格 再来一局")
+				show_end("地牢征服者！", _stats_text(e.data) + "\n\n按 空格 再来一局")
 	_refresh_stats()
+
+## 结算副标题的战绩文本。
+func _stats_text(data: Dictionary) -> String:
+	var s: Dictionary = data.get("stats", {})
+	if s.is_empty():
+		return "到达第 %d 层" % data.get("floor_number", 1)
+	return "到达第 %d 层\n击杀 %d | 回合 %d\n拾取 %d 件 | 获得金币 %d" % [
+		data.get("floor_number", 1), s.get("kills", 0), s.get("turns", 0),
+		s.get("items_picked", 0), s.get("gold_earned", 0)]
 
 func show_end(title: String, detail: String) -> void:
 	end_title.text = title
@@ -92,6 +118,8 @@ func reset() -> void:
 	hide_end()
 	inventory_open = false
 	_inv_panel.visible = false
+	shop_open = false
+	_shop_panel.visible = false
 	_refresh_stats()
 
 ## B 键开关背包；打开时按当前背包内容重建格子。
@@ -179,15 +207,80 @@ func _refresh_stats() -> void:
 	var p = s.player
 	hp_bar.max_value = p.max_hp
 	hp_bar.value = p.hp
-	stats_label.text = "HP %d/%d\nLv.%d  经验 %d/%d\n攻击 %d  防御 %d\n楼层 %d  背包 %d 件" % [
+	stats_label.text = "HP %d/%d\nLv.%d  经验 %d/%d\n攻击 %d  防御 %d\n楼层 %d  背包 %d 件\n金币 %d" % [
 		p.hp, p.max_hp, p.level, p.xp, p.xp_to_next(), p.atk, p.defense,
-		s.model.floor_number, s.inventory.size()]
+		s.model.floor_number, s.inventory.size(), p.gold]
 
 func _name(id: String) -> String:
 	return NAME_MAP.get(id, id)
 
 func _log(msg: String) -> void:
 	push_msg(msg)
+
+## 打开商店（SHOP_OPEN 事件触发），从规则层读取库存渲染。
+func open_shop() -> void:
+	shop_open = true
+	_shop_panel.visible = true
+	_render_shop()
+
+func close_shop() -> void:
+	shop_open = false
+	_shop_panel.visible = false
+
+## 按规则层 shop_stock 与玩家金币重建商品按钮。
+func _render_shop() -> void:
+	for child in _shop_grid.get_children():
+		child.queue_free()
+	var s = TurnManager.scheduler
+	if s == null:
+		return
+	_shop_gold_label.text = "你的金币：%d" % s.player.gold
+	for i in s.shop_stock.size():
+		var entry: Dictionary = s.shop_stock[i]
+		var def: Object = entry.def
+		var btn := Button.new()
+		btn.custom_minimum_size = Vector2(86, 62)
+		btn.text = "%s\n%d 金" % [def.display_name, entry.price]
+		if def.sprite_coords.x >= 0:
+			btn.icon = SpriteCatalog.tile_texture(def.sprite_coords)
+		btn.tooltip_text = _item_tooltip(def)
+		btn.disabled = s.player.gold < entry.price
+		btn.pressed.connect(_buy_item.bind(i))
+		_shop_grid.add_child(btn)
+
+func _buy_item(index: int) -> void:
+	if not shop_open:
+		return
+	var events: Array = TurnManager.buy(index)
+	if not events.is_empty():
+		consume(events)
+
+func _build_shop_panel() -> void:
+	_shop_panel = PanelContainer.new()
+	_shop_panel.visible = false
+	add_child(_shop_panel)
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 8)
+	_shop_panel.add_child(vbox)
+	var title := Label.new()
+	title.text = "商店（E 关闭，点击商品购买）"
+	vbox.add_child(title)
+	_shop_gold_label = Label.new()
+	_shop_gold_label.modulate = Color(1, 0.9, 0.4)
+	vbox.add_child(_shop_gold_label)
+	_shop_grid = GridContainer.new()
+	_shop_grid.columns = 3
+	_shop_grid.add_theme_constant_override("h_separation", 6)
+	_shop_grid.add_theme_constant_override("v_separation", 6)
+	vbox.add_child(_shop_grid)
+	_shop_panel.anchor_left = 0.5
+	_shop_panel.anchor_right = 0.5
+	_shop_panel.anchor_top = 0.5
+	_shop_panel.anchor_bottom = 0.5
+	_shop_panel.offset_left = -170.0
+	_shop_panel.offset_right = 170.0
+	_shop_panel.offset_top = -130.0
+	_shop_panel.offset_bottom = 130.0
 
 func _build_stats_panel() -> void:
 	var panel := PanelContainer.new()

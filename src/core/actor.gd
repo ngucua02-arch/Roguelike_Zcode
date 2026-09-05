@@ -14,9 +14,11 @@ var xp_reward: int = 0        # 被击杀时奖励给击杀者的经验（怪物
 var level: int = 1
 var xp: int = 0
 var is_player: bool = false
-var ai_type: String = "chase" # "chase" | "wander"
+var gold: int = 0              # 玩家金币（商人/怪物不用）
+var ai_type: String = "chase" # "chase" | "wander" | "shopkeeper"
 var glyph: String = "?"       # 渲染层占位标识（色块阶段用）
 var sprite_coords: Vector2i = Vector2i(-1, -1)  # 图集坐标（渲染层取精灵用）
+var is_elite: bool = false     # 精英怪：属性强化、必掉战利品
 
 # 升级曲线参数（玩家从 PlayerDef 拷入；怪物不升级则无副作用）
 var xp_base: int = 10

@@ -17,7 +17,7 @@ func _ready() -> void:
 ## 长按连走：轮询按住状态，冷却到点即走一步（补间 0.08s 能跟上）。
 func _process(delta: float) -> void:
 	_move_cooldown = maxf(0.0, _move_cooldown - delta)
-	if not game_running or %Hud.inventory_open or _move_cooldown > 0.0:
+	if not game_running or %Hud.inventory_open or %Hud.shop_open or _move_cooldown > 0.0:
 		return
 	var dir := Vector2i.ZERO
 	if Input.is_action_pressed("move_up"):
@@ -41,7 +41,7 @@ func _start_game() -> void:
 	%Camera.position = ViewConstants.cell_to_world(model.player.pos)
 	%Hud.bind_game(self)
 	%Hud.reset()
-	%Hud.push_msg("你醒在地牢第 1 层。按住 方向键/WASD 移动，B 开背包，站上洞口按空格下楼。")
+	%Hud.push_msg("你醒在地牢第 1 层。按住 方向键/WASD 移动，B 背包，走向商人按 E 交易。")
 	game_running = true
 
 ## 楼层主题色：用 FloorDef.floor_theme 给整张地图着色（每层氛围不同）。
@@ -52,14 +52,23 @@ func _apply_floor_theme(floor_number: int) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("bag"):
+		if %Hud.shop_open:
+			%Hud.close_shop()  # 商店与背包互斥
+			return
 		%Hud.toggle_inventory()
+		return
+	if event.is_action_pressed("interact"):
+		if %Hud.shop_open:
+			%Hud.close_shop()
+		else:
+			_act(GameEvents.ACTION_SHOP)
 		return
 	if not game_running:
 		if event.is_action_pressed("descend"):
 			_start_game()  # 结算画面按空格重开
 		return
-	if %Hud.inventory_open:
-		return  # 背包打开时拦截游戏输入（回合制无需暂停世界）
+	if %Hud.inventory_open or %Hud.shop_open:
+		return  # 面板打开时拦截游戏输入（回合制无需暂停世界）
 	if event.is_action_pressed("descend"):
 		_act(GameEvents.ACTION_DESCEND)
 	elif event.is_action_pressed("wait"):

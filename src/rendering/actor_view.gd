@@ -8,6 +8,8 @@ func setup(actor: Object) -> void:
 		coords = SpriteCatalog.PLAYER  # 兜底（无坐标数据的 def）
 	texture = SpriteCatalog.tile_texture(coords)
 	position = ViewConstants.cell_to_world(actor.pos)
+	if actor.is_elite:
+		scale = Vector2(1.3, 1.3)  # 精英怪体型更大
 	set_meta("actor_ref", actor)
 
 func slide_to(cell: Vector2i) -> void:

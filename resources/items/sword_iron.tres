@@ -9,4 +9,5 @@ glyph = "/"
 id = "sword_iron"
 kind = "weapon"
 power = 2
+price = 35
 sprite_coords = Vector2i(9, 8)
