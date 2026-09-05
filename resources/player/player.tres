@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PlayerDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/core/player_def.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "冒险者"
+max_hp = 20
+atk = 3
+defense = 1
+sight_radius = 6
+xp_base = 10
+xp_growth = 5
+hp_per_level = 5
+atk_per_level = 1
+defense_per_level = 1

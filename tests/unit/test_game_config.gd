@@ -1,0 +1,57 @@
+extends GutTest
+## 数值表完整性：.tres 装配 + 字段正确性 + 每层生成表可抽取。
+
+const GameConfig = preload("res://src/autoload/game_config.gd")
+
+func test_player_def_from_tres() -> void:
+	var d = GameConfig.player_def()
+	assert_not_null(d)
+	assert_eq(d.display_name, "冒险者")
+	assert_eq(d.max_hp, 20)
+	assert_eq(d.atk, 3)
+	assert_eq(d.defense, 1)
+	assert_eq(d.xp_base, 10)
+
+func test_floor_defs_three_floors() -> void:
+	var defs: Array = GameConfig.floor_defs()
+	assert_eq(defs.size(), 3)
+	assert_eq(defs[0].width, 36)
+	assert_eq(defs[1].width, 40)
+	assert_eq(defs[2].width, 44)
+	for f in defs:
+		assert_true(f.monster_spawns.size() > 0, "怪物表非空")
+		assert_true(f.item_spawns.size() > 0, "物品表非空")
+
+func test_spawn_tables_have_positive_weights_and_pickable() -> void:
+	var rng = RandomNumberGenerator.new()
+	rng.seed = 11
+	for f in GameConfig.floor_defs():
+		var total_m := 0
+		for entry in f.monster_spawns:
+			total_m += int(entry.weight)
+			assert_not_null(entry.def, "怪物 def 引用有效")
+		var total_i := 0
+		for entry in f.item_spawns:
+			total_i += int(entry.weight)
+			assert_not_null(entry.def, "物品 def 引用有效")
+		assert_true(total_m > 0 and total_i > 0, "权重和为正")
+		assert_not_null(f.pick_monster(rng))
+		assert_not_null(f.pick_item(rng))
+
+func test_known_monster_values() -> void:
+	var f = GameConfig.floor_defs()[0]
+	var rat_found := false
+	for entry in f.monster_spawns:
+		if entry.def.id == "rat":
+			rat_found = true
+			assert_eq(entry.def.max_hp, 4)
+			assert_eq(entry.def.atk, 2)
+			assert_eq(entry.def.xp_reward, 3)
+	assert_true(rat_found, "第 1 层含窟鼠")
+
+func test_item_kinds_valid() -> void:
+	var valid := ["potion", "weapon", "armor"]
+	var f = GameConfig.floor_defs()[1]
+	for entry in f.item_spawns:
+		assert_true(valid.has(entry.def.kind), "物品类型合法: %s" % entry.def.kind)
+		assert_true(entry.def.power > 0)

@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="FloorDef" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/core/floor_def.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/monsters/bat.tres" id="2_bat"]
+[ext_resource type="Resource" path="res://resources/monsters/skeleton.tres" id="3_skel"]
+[ext_resource type="Resource" path="res://resources/items/potion_minor.tres" id="4_potion"]
+[ext_resource type="Resource" path="res://resources/items/sword_rusty.tres" id="5_sword"]
+[ext_resource type="Resource" path="res://resources/items/leather_mail.tres" id="6_mail"]
+
+[resource]
+script = ExtResource("1_script")
+width = 44
+height = 26
+room_count_min = 6
+room_count_max = 9
+monster_count_min = 5
+monster_count_max = 10
+item_count_min = 2
+item_count_max = 4
+monster_spawns = [{
+"def": ExtResource("2_bat"),
+"weight": 3
+}, {
+"def": ExtResource("3_skel"),
+"weight": 5
+}]
+item_spawns = [{
+"def": ExtResource("4_potion"),
+"weight": 5
+}, {
+"def": ExtResource("5_sword"),
+"weight": 2
+}, {
+"def": ExtResource("6_mail"),
+"weight": 2
+}]
+floor_theme = Color(0.5, 0.5, 0.5, 1)

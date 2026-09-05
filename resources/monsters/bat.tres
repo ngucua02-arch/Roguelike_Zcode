@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="MonsterDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/core/monster_def.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+ai_type = "wander"
+atk = 3
+defense = 0
+display_name = "洞蝠"
+glyph = "b"
+id = "bat"
+max_hp = 3
+sight_radius = 7
+xp_reward = 4
