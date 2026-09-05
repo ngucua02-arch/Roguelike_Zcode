@@ -67,3 +67,22 @@ func test_all_defs_have_sprites() -> void:
 		for entry in f.item_spawns:
 			assert_true(entry.def.sprite_coords.x >= 0 and entry.def.sprite_coords.y >= 0,
 				"物品 %s 精灵坐标有效" % entry.def.id)
+
+func test_content_volume_matches_spec() -> void:
+	# spec §2：4-5 种怪物、5-6 种道具（当前承诺超额：怪 6 / 物 7）
+	var monster_ids := {}
+	var item_ids := {}
+	for f in GameConfig.floor_defs():
+		for entry in f.monster_spawns:
+			monster_ids[entry.def.id] = true
+		for entry in f.item_spawns:
+			item_ids[entry.def.id] = true
+	assert_true(monster_ids.size() >= 5, "怪物种类 >= 5（实际 %d）" % monster_ids.size())
+	assert_true(item_ids.size() >= 6, "道具种类 >= 6（实际 %d）" % item_ids.size())
+
+func test_floor_themes_differ() -> void:
+	# 楼层主题色互不相同（每层氛围差异）
+	var themes: Array = []
+	for f in GameConfig.floor_defs():
+		assert_false(themes.has(f.floor_theme), "楼层主题色重复")
+		themes.append(f.floor_theme)

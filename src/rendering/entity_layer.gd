@@ -36,6 +36,7 @@ func consume(events: Array) -> void:
 				var av := _find_view(e.data.attacker_id)
 				if av != null:
 					av.play_attack(e.pos)
+				_spawn_damage_number(e.pos, e.data.damage)
 			"died":
 				var dv := _find_view(e.data.actor_id)
 				if dv != null:
@@ -47,6 +48,20 @@ func consume(events: Array) -> void:
 
 func player_view() -> ActorView:
 	return _find_view("player")
+
+## 伤害飘字：向上飘并淡出，纯表现不参与结算。
+func _spawn_damage_number(pos: Vector2i, damage: int) -> void:
+	var lbl := Label.new()
+	lbl.text = "-%d" % damage
+	lbl.add_theme_font_size_override("font_size", 10)
+	lbl.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
+	lbl.z_index = 10
+	lbl.position = ViewConstants.cell_to_world(pos) + Vector2(-8, -20)
+	add_child(lbl)
+	var tw := lbl.create_tween()
+	tw.tween_property(lbl, "position:y", lbl.position.y - 14.0, 0.45)
+	tw.parallel().tween_property(lbl, "modulate:a", 0.0, 0.45)
+	tw.tween_callback(lbl.queue_free)
 
 ## 立即清空子节点（换层时避免 queue_free 延迟造成帧间残留）。
 func _clear_now() -> void:

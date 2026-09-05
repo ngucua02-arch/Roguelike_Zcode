@@ -1,12 +1,15 @@
-[gd_resource type="Resource" script_class="FloorDef" load_steps=8 format=3]
+[gd_resource type="Resource" script_class="FloorDef" load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://src/core/floor_def.gd" id="1_script"]
 [ext_resource type="Resource" path="res://resources/monsters/rat.tres" id="2_rat"]
 [ext_resource type="Resource" path="res://resources/monsters/bat.tres" id="3_bat"]
-[ext_resource type="Resource" path="res://resources/monsters/skeleton.tres" id="4_skel"]
-[ext_resource type="Resource" path="res://resources/items/potion_minor.tres" id="5_potion"]
-[ext_resource type="Resource" path="res://resources/items/sword_rusty.tres" id="6_sword"]
-[ext_resource type="Resource" path="res://resources/items/leather_mail.tres" id="7_mail"]
+[ext_resource type="Resource" path="res://resources/monsters/slime.tres" id="4_slime"]
+[ext_resource type="Resource" path="res://resources/monsters/skeleton.tres" id="5_skel"]
+[ext_resource type="Resource" path="res://resources/monsters/goblin.tres" id="6_goblin"]
+[ext_resource type="Resource" path="res://resources/items/potion_minor.tres" id="7_potion_s"]
+[ext_resource type="Resource" path="res://resources/items/potion_greater.tres" id="8_potion_g"]
+[ext_resource type="Resource" path="res://resources/items/sword_iron.tres" id="9_sword_i"]
+[ext_resource type="Resource" path="res://resources/items/leather_mail.tres" id="10_mail"]
 
 [resource]
 script = ExtResource("1_script")
@@ -20,22 +23,31 @@ item_count_min = 2
 item_count_max = 4
 monster_spawns = [{
 "def": ExtResource("2_rat"),
-"weight": 3
+"weight": 2
 }, {
 "def": ExtResource("3_bat"),
-"weight": 4
+"weight": 3
 }, {
-"def": ExtResource("4_skel"),
+"def": ExtResource("4_slime"),
+"weight": 3
+}, {
+"def": ExtResource("5_skel"),
+"weight": 2
+}, {
+"def": ExtResource("6_goblin"),
 "weight": 2
 }]
 item_spawns = [{
-"def": ExtResource("5_potion"),
-"weight": 5
+"def": ExtResource("7_potion_s"),
+"weight": 4
 }, {
-"def": ExtResource("6_sword"),
+"def": ExtResource("8_potion_g"),
 "weight": 2
 }, {
-"def": ExtResource("7_mail"),
+"def": ExtResource("9_sword_i"),
+"weight": 2
+}, {
+"def": ExtResource("10_mail"),
 "weight": 2
 }]
-floor_theme = Color(0.5, 0.5, 0.5, 1)
+floor_theme = Color(0.82, 0.88, 1, 1)

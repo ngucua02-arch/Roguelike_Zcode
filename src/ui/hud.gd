@@ -212,7 +212,7 @@ func _build_stats_panel() -> void:
 	stats_label = Label.new()
 	vbox.add_child(stats_label)
 	var hint := Label.new()
-	hint.text = "方向键/WASD 移动\n空格 下楼\n空格+方向 等待"
+	hint.text = "按住 方向键/WASD 移动\n空格 下楼\nB 背包（点击使用）"
 	hint.modulate = Color(1, 1, 1, 0.55)
 	vbox.add_child(hint)
 

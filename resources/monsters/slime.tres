@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="MonsterDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/core/monster_def.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+ai_type = "wander"
+atk = 2
+defense = 1
+display_name = "绿史莱姆"
+glyph = "j"
+id = "slime"
+max_hp = 6
+sight_radius = 4
+sprite_coords = Vector2i(0, 9)
+xp_reward = 4
