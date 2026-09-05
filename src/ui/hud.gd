@@ -117,7 +117,9 @@ func refresh_inventory() -> void:
 		var def: Object = items[i].def
 		var btn := Button.new()
 		btn.custom_minimum_size = Vector2(66, 56)
-		btn.text = "%s\n%s" % [def.glyph, def.display_name]
+		btn.text = def.display_name
+		if def.sprite_coords.x >= 0:
+			btn.icon = SpriteCatalog.tile_texture(def.sprite_coords)
 		btn.tooltip_text = _item_tooltip(def)
 		btn.pressed.connect(_use_item.bind(i))
 		_inv_grid.add_child(btn)

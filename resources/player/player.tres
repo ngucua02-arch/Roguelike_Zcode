@@ -14,3 +14,4 @@ xp_growth = 5
 hp_per_level = 5
 atk_per_level = 1
 defense_per_level = 1
+sprite_coords = Vector2i(1, 8)

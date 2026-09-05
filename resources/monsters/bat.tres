@@ -13,3 +13,4 @@ id = "bat"
 max_hp = 3
 sight_radius = 7
 xp_reward = 4
+sprite_coords = Vector2i(0, 10)

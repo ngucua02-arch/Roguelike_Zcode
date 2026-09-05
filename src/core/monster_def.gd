@@ -11,3 +11,4 @@ extends Resource
 @export var sight_radius: int = 5
 @export var xp_reward: int = 3
 @export_enum("chase", "wander") var ai_type: String = "chase"
+@export var sprite_coords: Vector2i = Vector2i(-1, -1)  # 图集坐标（Kenney Tiny Dungeon 16x16）

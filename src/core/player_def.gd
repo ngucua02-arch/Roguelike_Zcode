@@ -12,3 +12,4 @@ extends Resource
 @export var hp_per_level: int = 5
 @export var atk_per_level: int = 1
 @export var defense_per_level: int = 1
+@export var sprite_coords: Vector2i = Vector2i(1, 8)  # 图集坐标（Kenney Tiny Dungeon 16x16）

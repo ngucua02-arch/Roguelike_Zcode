@@ -13,3 +13,4 @@ id = "skeleton"
 max_hp = 8
 sight_radius = 6
 xp_reward = 7
+sprite_coords = Vector2i(1, 9)

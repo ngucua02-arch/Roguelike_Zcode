@@ -13,3 +13,4 @@ id = "rat"
 max_hp = 4
 sight_radius = 5
 xp_reward = 3
+sprite_coords = Vector2i(2, 10)

@@ -16,6 +16,7 @@ var xp: int = 0
 var is_player: bool = false
 var ai_type: String = "chase" # "chase" | "wander"
 var glyph: String = "?"       # 渲染层占位标识（色块阶段用）
+var sprite_coords: Vector2i = Vector2i(-1, -1)  # 图集坐标（渲染层取精灵用）
 
 # 升级曲线参数（玩家从 PlayerDef 拷入；怪物不升级则无副作用）
 var xp_base: int = 10
@@ -39,6 +40,7 @@ static func from_player_def(def: Object) -> Object:
 	a.hp_per_level = def.hp_per_level
 	a.atk_per_level = def.atk_per_level
 	a.defense_per_level = def.defense_per_level
+	a.sprite_coords = def.sprite_coords
 	a.glyph = "@"
 	return a
 
@@ -53,6 +55,7 @@ static func from_monster_def(def: Object, pos: Vector2i) -> Object:
 	a.sight_radius = def.sight_radius
 	a.xp_reward = def.xp_reward
 	a.ai_type = def.ai_type
+	a.sprite_coords = def.sprite_coords
 	a.pos = pos
 	a.glyph = def.glyph
 	return a

@@ -9,3 +9,4 @@ glyph = "/"
 id = "sword_rusty"
 kind = "weapon"
 power = 1
+sprite_coords = Vector2i(7, 8)

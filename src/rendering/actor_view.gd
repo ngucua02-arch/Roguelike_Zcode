@@ -1,11 +1,12 @@
 class_name ActorView
 extends Sprite2D
-## 单个实体的色块占位视图：走位补间、攻击冲刺、死亡淡出。
+## 单个实体的精灵视图：按 def 提供的图集坐标取贴图，走位补间、攻击冲刺、死亡淡出。
 
-func setup(actor: Object, color: Color) -> void:
-	var img := Image.create(12, 12, false, Image.FORMAT_RGB8)
-	img.fill(color)
-	texture = ImageTexture.create_from_image(img)
+func setup(actor: Object) -> void:
+	var coords: Vector2i = actor.sprite_coords
+	if coords.x < 0 or coords.y < 0:
+		coords = SpriteCatalog.PLAYER  # 兜底（无坐标数据的 def）
+	texture = SpriteCatalog.tile_texture(coords)
 	position = ViewConstants.cell_to_world(actor.pos)
 	set_meta("actor_ref", actor)
 

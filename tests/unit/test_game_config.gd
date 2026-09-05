@@ -55,3 +55,15 @@ func test_item_kinds_valid() -> void:
 	for entry in f.item_spawns:
 		assert_true(valid.has(entry.def.kind), "物品类型合法: %s" % entry.def.kind)
 		assert_true(entry.def.power > 0)
+
+func test_all_defs_have_sprites() -> void:
+	# 素材数据驱动：每个 def 必须带有效图集坐标（Kenney Tiny Dungeon 12x11）
+	var p = GameConfig.player_def()
+	assert_true(p.sprite_coords.x >= 0 and p.sprite_coords.y >= 0, "玩家精灵坐标有效")
+	for f in GameConfig.floor_defs():
+		for entry in f.monster_spawns:
+			assert_true(entry.def.sprite_coords.x >= 0 and entry.def.sprite_coords.y >= 0,
+				"怪物 %s 精灵坐标有效" % entry.def.id)
+		for entry in f.item_spawns:
+			assert_true(entry.def.sprite_coords.x >= 0 and entry.def.sprite_coords.y >= 0,
+				"物品 %s 精灵坐标有效" % entry.def.id)
