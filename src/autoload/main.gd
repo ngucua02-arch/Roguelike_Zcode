@@ -23,10 +23,15 @@ func _start_game() -> void:
 	game_running = true
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("bag"):
+		%Hud.toggle_inventory()
+		return
 	if not game_running:
 		if event.is_action_pressed("descend"):
 			_start_game()  # 结算画面按空格重开
 		return
+	if %Hud.inventory_open:
+		return  # 背包打开时拦截游戏输入（回合制无需暂停世界）
 	var dir := Vector2i.ZERO
 	if event.is_action_pressed("move_up"):
 		dir = Vector2i.UP

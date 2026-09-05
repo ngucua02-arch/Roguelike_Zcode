@@ -20,10 +20,17 @@ var end_title: Label
 var end_detail: Label
 var _log_lines: Array = []
 
+# 背包面板
+var inventory_open := false
+var _inv_panel: PanelContainer
+var _inv_grid: GridContainer
+var _inv_hint: Label
+
 func _ready() -> void:
 	_build_stats_panel()
 	_build_log()
 	_build_end_layer()
+	_build_inventory_panel()
 
 func bind_game(game_main: Object) -> void:
 	main = game_main
@@ -52,6 +59,8 @@ func consume(events: Array) -> void:
 				_log("升级！Lv.%d（回满血）" % e.data.level)
 			GameEvents.PICKED_UP:
 				_log("拾取 %s" % e.data.item_name)
+				if inventory_open:
+					refresh_inventory()
 			"healed":
 				_log("恢复 %d HP" % e.data.amount)
 			"equipped":
@@ -81,7 +90,85 @@ func reset() -> void:
 	_log_lines.clear()
 	log_label.text = ""
 	hide_end()
+	inventory_open = false
+	_inv_panel.visible = false
 	_refresh_stats()
+
+## B 键开关背包；打开时按当前背包内容重建格子。
+func toggle_inventory() -> void:
+	inventory_open = not inventory_open
+	_inv_panel.visible = inventory_open
+	if inventory_open:
+		refresh_inventory()
+
+## 按规则层 Inventory 当前内容重建物品按钮格子。
+func refresh_inventory() -> void:
+	for child in _inv_grid.get_children():
+		child.queue_free()
+	var s = TurnManager.scheduler
+	if s == null:
+		return
+	var items: Array = s.inventory.items
+	if items.is_empty():
+		_inv_hint.visible = true
+		return
+	_inv_hint.visible = false
+	for i in items.size():
+		var def: Object = items[i].def
+		var btn := Button.new()
+		btn.custom_minimum_size = Vector2(66, 56)
+		btn.text = "%s\n%s" % [def.glyph, def.display_name]
+		btn.tooltip_text = _item_tooltip(def)
+		btn.pressed.connect(_use_item.bind(i))
+		_inv_grid.add_child(btn)
+
+func _use_item(index: int) -> void:
+	var s = TurnManager.scheduler
+	if s == null or not inventory_open:
+		return
+	var events: Array = s.inventory.use(index, s.player)
+	if not events.is_empty():
+		consume(events)
+	refresh_inventory()
+
+func _item_tooltip(def: Object) -> String:
+	match def.kind:
+		"potion":
+			return "点击使用：恢复 %d 点 HP" % def.power
+		"weapon":
+			return "点击装备：攻击 +%d" % def.power
+		"armor":
+			return "点击装备：防御 +%d" % def.power
+	return def.display_name
+
+func _build_inventory_panel() -> void:
+	_inv_panel = PanelContainer.new()
+	_inv_panel.visible = false
+	add_child(_inv_panel)
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 8)
+	_inv_panel.add_child(vbox)
+	var title := Label.new()
+	title.text = "背包（B 关闭，点击物品使用/装备）"
+	vbox.add_child(title)
+	_inv_grid = GridContainer.new()
+	_inv_grid.columns = 4
+	_inv_grid.add_theme_constant_override("h_separation", 6)
+	_inv_grid.add_theme_constant_override("v_separation", 6)
+	vbox.add_child(_inv_grid)
+	_inv_hint = Label.new()
+	_inv_hint.text = "空空如也——去地牢里翻找吧"
+	_inv_hint.modulate = Color(1, 1, 1, 0.5)
+	vbox.add_child(_inv_hint)
+	# 面板固定在屏幕中央
+	_inv_panel.anchor_left = 0.5
+	_inv_panel.anchor_right = 0.5
+	_inv_panel.anchor_top = 0.5
+	_inv_panel.anchor_bottom = 0.5
+	_inv_panel.offset_left = -160.0
+	_inv_panel.offset_right = 160.0
+	_inv_panel.offset_top = -150.0
+	_inv_panel.offset_bottom = 150.0
 
 func _refresh_stats() -> void:
 	var s = TurnManager.scheduler
